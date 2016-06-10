@@ -1,0 +1,19 @@
+CC=gcc
+CFLAGS=-c -g -w -std=c99
+SOURCES=q_lib.c cock.c QLIT_lib.c
+OBJECTS=$(SOURCES:.c=.o)
+TARGET=a.out
+
+.PHONY: all
+all: $(TARGET)
+
+$(TARGET): $(OBJECTS)
+  $(CC) $^ -o $@ -lm -I.
+
+  %.o: %.c
+    $(CC) $(CFLAGS) $< -o $@
+
+    .PHONY: clean
+    clean :
+      rm -f *.o
+

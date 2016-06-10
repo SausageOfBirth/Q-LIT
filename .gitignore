@@ -1,0 +1,16 @@
+*.out
+*.o
+*.out
+*.swp
+*.hi
+*.log
+*.gz
+*.toc
+*.aux
+*._*
+tags
+*/test_programs/*.c
+*.pdf
+Q-LIT
+qlc
+qubitoutput_*
