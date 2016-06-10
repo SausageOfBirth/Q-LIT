@@ -10,7 +10,6 @@
 *._*
 tags
 */test_programs/*.c
-*.pdf
 Q-LIT
 qlc
 qubitoutput_*
