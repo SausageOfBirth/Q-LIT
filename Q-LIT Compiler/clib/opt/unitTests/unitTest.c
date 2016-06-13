@@ -77,8 +77,8 @@ int unitTest(){
   sparseMat2->col = 4;
   sparseMat2->valsize = 2;
 
-  Matrix* negRowMatrix = scalarG(-1.0 + 0.0 * I, rowMatrix);
-  Matrix* negColMatrix = scalarG(-1.0 + 0.0 * I, colMatrix);
+  Matrix* negRowMatrix = scalarG(rowMatrix, -1.0 + 0.0 * I);
+  Matrix* negColMatrix = scalarG(colMatrix, -1.0 + 0.0 * I);
 
   Qubit* fullQubit0 = (Qubit*)malloc(sizeof(Qubit));
   double complex* fullQubit0Data = (double complex*)malloc(sizeof(double complex));
@@ -345,25 +345,34 @@ int unitTest(){
   printf("multG test2 : %s\n", matrixEqual(multResCalc3, multRes3) ? "true" : "false");
   printf("multG test3 : %s\n", multG(rowMatrix, rowMatrix) == NULL ? "true" : "false");
 
-  printf("plusG test0 : %s\n", matrixEqual(scalarG(2.0 + 0.0 * I, multRes2), plusG(multRes2, multRes2)) ? "true" : "false");
+  printf("plusG test0 : %s\n", matrixEqual(scalarG(multRes2, 2.0 + 0.0 * I), plusG(multRes2, multRes2)) ? "true" : "false");
   printf("plusG test1 : %s\n", plusG(rowMatrix, colMatrix) == NULL ? "true" : "false");
-  printf("plusG test2 : %s\n", matrixEqual(scalarG(2.0 + 0.0 * I, sparseMat1), plusG(sparseMat1, sparseMat1)) ? "true" : "false");
-  printf("plusG test3 : %s\n", matrixEqual(scalarG(2.0 + 0.0 * I, sparseMat2), plusG(sparseMat2, sparseMat2)) ? "true" : "false");
+  printf("plusG test2 : %s\n", matrixEqual(scalarG(sparseMat1, 2.0 + 0.0 * I), plusG(sparseMat1, sparseMat1)) ? "true" : "false");
+  printf("plusG test3 : %s\n", matrixEqual(scalarG(sparseMat2, 2.0 + 0.0 * I), plusG(sparseMat2, sparseMat2)) ? "true" : "false");
   printf("plusG test4 : %s\n", matrixEqual(plusResCalc0, plusRes0) ? "true" : "false");
 
-  printf("minusG test0 : %s\n", matrixEqual(minusG(rowMatrix, negRowMatrix), scalarG(2.0 + 0.0 * I, rowMatrix)) ? "true" : "false");
-  printf("minusG test1 : %s\n", matrixEqual(minusG(colMatrix, negColMatrix), scalarG(2.0 + 0.0 * I, colMatrix)) ? "true" : "false");
+  printf("minusG test0 : %s\n", matrixEqual(minusG(rowMatrix, negRowMatrix), scalarG(rowMatrix, 2.0 + 0.0 * I)) ? "true" : "false");
+  printf("minusG test1 : %s\n", matrixEqual(minusG(colMatrix, negColMatrix), scalarG(colMatrix, 2.0 + 0.0 * I)) ? "true" : "false");
   printf("minusG test2 : %s\n", minusG(rowMatrix, colMatrix) == NULL ? "true" : "false");
   printf("minusG test3 : %s\n", matrixEqual(minusG(colMatrix, colMatrix), minusRes0) ? "true" : "false");
   printf("minusG test4 : %s\n", matrixEqual(minusG(rowMatrix, rowMatrix), minusRes1) ? "true" : "false");
 
-  printf("scalarG test0 : %s\n", matrixEqual(scalarG(2.0 + 0.0 * I, rowMatrix), scalarRes0) ? "true" : "false");
-  printf("scalarG test1 : %s\n", matrixEqual(scalarG(0.0 + 0.0 * I, rowMatrix), scalarRes1) ? "true" : "false");
+  printf("scalarG test0 : %s\n", matrixEqual(scalarG(rowMatrix, 2.0 + 0.0 * I), scalarRes0) ? "true" : "false");
+  printf("scalarG test1 : %s\n", matrixEqual(scalarG(rowMatrix, 0.0 + 0.0 * I), scalarRes1) ? "true" : "false");
 
-  printf("tensor test0 : %s\n", matrixEqual(tensor(rowMatrix, rowMatrix), tensorRes0) ? "true" : "false");
-  printf("tensor test1 : %s\n", matrixEqual(tensor(colMatrix, colMatrix), tensorRes1) ? "true" : "false");
-  printf("tensor test2 : %s\n", matrixEqual(tensor(rowMatrix, colMatrix), tensorRes2) ? "true" : "false");
-  printf("tensor test3 : %s\n", matrixEqual(tensor(singularMatrix, singularMatrix), tensorRes3) ? "true" : "false");
+  Matrix* tensor0_res = tensor(rowMatrix, rowMatrix);
+  rebalance_row(&tensor0_res);
+  Matrix* tensor1_res = tensor(colMatrix, colMatrix);
+  rebalance_row(&tensor1_res);
+  Matrix* tensor2_res = tensor(rowMatrix, colMatrix);
+  rebalance_row(&tensor2_res);
+  Matrix* tensor3_res = tensor(singularMatrix, singularMatrix);
+  rebalance_row(&tensor3_res);
+
+  printf("tensor test0 : %s\n", matrixEqual(tensor0_res, tensorRes0) ? "true" : "false");
+  printf("tensor test1 : %s\n", matrixEqual(tensor1_res, tensorRes1) ? "true" : "false");
+  printf("tensor test2 : %s\n", matrixEqual(tensor2_res, tensorRes2) ? "true" : "false");
+  printf("tensor test3 : %s\n", matrixEqual(tensor3_res, tensorRes3) ? "true" : "false");
 
   printf("multBitGate test0 : %s\n", qubitEqual(multBitGate(tensor(identityG(), identityG()), qubitInit(0, 2)), qubitInit(0, 2)) ? "true" : "false");
   printf("multBitGate test1 : %s\n", qubitEqual(multBitGate(tensor(notG(), notG()), qubitInit(3, 2)), qubitInit(0, 2)) ? "true" : "false");
@@ -375,18 +384,18 @@ int unitTest(){
   printf("innerProduct test0 : %s\n", innerProduct(fullQubit0, fullQubit0) == 4.0 + 0.0 * I ? "true" : "false");
   printf("innerProduct test1 : %s\n", innerProduct(fullQubit1, fullQubit1) == 30.0 + 0.0 * I ? "true" : "false");
 
-  printf("plusQ test0 : %s\n", qubitEqual(plusQ(fullQubit0, fullQubit0), scalarQ(2.0 + 0.0 * I, fullQubit0)) ? "true" : "false");
-  printf("plusQ test1 : %s\n", qubitEqual(plusQ(fullQubit1, fullQubit1), scalarQ(2.0 + 0.0 * I, fullQubit1)) ? "true" : "false");
+  printf("plusQ test0 : %s\n", qubitEqual(plusQ(fullQubit0, fullQubit0), scalarQ(fullQubit0, 2.0 + 0.0 * I)) ? "true" : "false");
+  printf("plusQ test1 : %s\n", qubitEqual(plusQ(fullQubit1, fullQubit1), scalarQ(fullQubit1, 2.0 + 0.0 * I)) ? "true" : "false");
   printf("plusQ test2 : %s\n", plusQ(fullQubit0, fullQubit1) == NULL ? "true" : "false");
 
-  printf("minusQ test0 : %s\n", qubitEqual(minusQ(fullQubit0, fullQubit0), scalarQ(0.0 + 0.0 * I, fullQubit0)) ? "true" : "false");
-  printf("minusQ test1 : %s\n", qubitEqual(minusQ(fullQubit1, fullQubit1), scalarQ(0.0 + 0.0 * I, fullQubit1)) ? "true" : "false");
+  printf("minusQ test0 : %s\n", qubitEqual(minusQ(fullQubit0, fullQubit0), scalarQ(fullQubit0, 0.0 + 0.0 * I)) ? "true" : "false");
+  printf("minusQ test1 : %s\n", qubitEqual(minusQ(fullQubit1, fullQubit1), scalarQ(fullQubit1, 0.0 + 0.0 * I)) ? "true" : "false");
   printf("minusQ test2 : %s\n", minusQ(fullQubit0, fullQubit1) == NULL ? "true" : "false");
 
-  printf("scalarQ test0 : %s\n", qubitEqual(scalarQ(2.0 + 0.0 * I, fullQubit0), scalarQRes2) ? "true" : "false");
-  printf("scalarQ test1 : %s\n", qubitEqual(scalarQ(2.0 + 0.0 * I, fullQubit1), scalarQRes3) ? "true" : "false");
-  printf("scalarQ test2 : %s\n", qubitEqual(scalarQ(0.0 + 0.0 * I, fullQubit0), scalarQRes0) ? "true" : "false");
-  printf("scalarQ test3 : %s\n", qubitEqual(scalarQ(0.0 + 0.0 * I, fullQubit1), scalarQRes1) ? "true" : "false");
+  printf("scalarQ test0 : %s\n", qubitEqual(scalarQ(fullQubit0, 2.0 + 0.0 * I), scalarQRes2) ? "true" : "false");
+  printf("scalarQ test1 : %s\n", qubitEqual(scalarQ(fullQubit1, 2.0 + 0.0 * I), scalarQRes3) ? "true" : "false");
+  printf("scalarQ test2 : %s\n", qubitEqual(scalarQ(fullQubit0, 0.0 + 0.0 * I), scalarQRes0) ? "true" : "false");
+  printf("scalarQ test3 : %s\n", qubitEqual(scalarQ(fullQubit1, 0.0 + 0.0 * I), scalarQRes1) ? "true" : "false");
 
   rebalance_col(&unsortedMatrix0);
   rebalance_col(&postsortedMatrix0); //this is the singleton one

@@ -94,6 +94,7 @@ c.add(5,[6],not);
 c.add(5,[7],not);
 c.add(5,[8],not);
 c.add(5,[9],not);
+c.add(5,[9],not);
 c.add(5,[10],not);
 c.add(5,[11],not);
 c.add(5,[12],not);

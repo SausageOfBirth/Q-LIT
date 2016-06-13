@@ -226,6 +226,7 @@ Qubit* multBitGate(Matrix* m, Qubit* q) {
     int x = 0;
     int y = 0;
     int currentX = 0;
+    rebalance_row(&m);
     double complex buff = zero;
     double complex *data = (double complex*)malloc(sizeof(double complex) * q->len);
     while(n < q->len && x < m->valsize){
@@ -715,7 +716,6 @@ Matrix* multG(Matrix* m1, Matrix* m2){
         }
       }
     }
-    rebalance_row(&m2);
     tuple** resShort = (tuple**)malloc(sizeof(tuple*) * n);
     resShort = (tuple**)memcpy(resShort, resdata, sizeof(tuple*) * n);
     /* free(resdata); */
@@ -758,6 +758,8 @@ Matrix* plusG(Matrix* m1, Matrix* m2){
   /* start timer */
   gettimeofday(&t1, NULL);
 #endif
+  rebalance_row(&m1);
+  rebalance_row(&m2);
   if(m1->row == m2->row && m1->col == m2->col){
     tuple** resdata = (tuple**)malloc(sizeof(tuple*) * (m1->valsize + m2->valsize));
     int x = 0;
@@ -847,6 +849,8 @@ Matrix* minusG(Matrix* m1, Matrix* m2){
   /* start timer */
   gettimeofday(&t1, NULL);
 #endif
+  rebalance_row(&m1);
+  rebalance_row(&m2);
   if(m1->row == m2->row && m1->col == m2->col){
     tuple** resdata = (tuple**)malloc(sizeof(tuple*) * (m1->valsize + m2->valsize));
     int x = 0;
@@ -958,7 +962,6 @@ Matrix* tensor(Matrix* m1, Matrix* m2){
   res->row = m1->row * m2->row;
   res->valsize = rN;
   res->data = resdata;
-  rebalance_row(&res);
 
 #ifdef RUNTIME
   /* stop timer */
