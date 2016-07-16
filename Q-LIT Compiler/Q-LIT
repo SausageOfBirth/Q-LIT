@@ -1,0 +1,120 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied, need a program to compile dammit!"
+    echo "But seriously, it works like this:"
+    echo "  -n chooses the naive compiler"
+		echo "  -o chooses the optimized compiler"
+		echo "  -s leaves the resulting c file in the same folder as the q source"
+		echo "  -r compiles with benchmarking information"
+		echo "The name of the source file should come last"
+		echo "it is mandatory to provide filepath and so is either -n or -o"
+		exit 1
+fi
+
+cflag=false
+sflag=false
+
+root=$(pwd)
+
+while getopts ":nosr" opt; do
+  case $opt in
+   o)
+	   comp="o"
+		 cflag=true
+     ;;
+   n)
+	   comp="n"
+		 cflag=true
+     ;;
+	 s)
+	   sflag=true
+		 ;;
+	 r)
+	   M="-D RUNTIME"
+		 ;;
+   \?)
+     echo "Invalid operation: -$OPTARG" >&2
+     ;;
+  esac
+done
+
+if ! $cflag
+then
+	echo "Use the -o or -n to pick the naive or optimized compiler. Either is mandatory" >&2
+	exit 1
+fi
+
+prog="${@: -1}"
+if [[ $prog == -* ]]
+then
+	echo "Please provide a source file"
+	exit 1
+fi
+
+if [ ! -f $prog ]; 
+then
+	echo "Specified file does not exist, aborting"
+	exit 1
+fi
+
+prog_base=${prog##*/}
+prog_base=${prog_base%.*}
+
+ghc -isrc -odir bin/ -hidir bin/ src/${comp}quantum.hs -o ./bin/qlc
+
+make="
+CC=gcc
+CFLAGS=-c -g -w -std=c99 $M
+SOURCES=q_lib.c ${prog_base}.c QLIT_lib.c
+OBJECTS=\$(SOURCES:.c=.o)
+TARGET=${prog_base}.out
+
+.PHONY: all
+all: \$(TARGET)
+
+\$(TARGET): \$(OBJECTS)
+	\$(CC) $^ -o \$@ -lm -I.
+
+%.o: %.c
+	\$(CC) \$(CFLAGS) \$< -o \$@
+
+.PHONY: clean
+clean :
+	rm -f *.o
+"
+echo "$make" > ___m
+
+x=$((./bin/qlc ${prog}) 2>&1)
+echo $x
+if [[ "$x" != "Haskell Compilation successful" ]]
+	then exit 1
+fi
+cd $(dirname ${prog})
+
+case $comp in
+  "n")
+		mv $(ls -t | head -n1) $root/clib/nav/
+		cd $root
+		mv ___m clib/nav/Makefile
+    cd clib/nav
+		;;
+	"o")
+		mv $(ls -t | head -n1) $root/clib/opt/
+		cd $root
+		mv ___m clib/opt/Makefile
+    cd clib/opt
+		;;
+esac
+
+make
+if $sflag
+  then mv ${prog_base}.c ../../$(dirname ${prog})
+	else rm ${prog_base}.c
+fi
+
+mv $(ls -t | head -n1) ../..
+make clean
+rm Makefile
+cd ../..
